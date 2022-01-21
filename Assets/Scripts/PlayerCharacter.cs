@@ -12,16 +12,20 @@ public class PlayerCharacter : MonoBehaviour
     public float LookSpeed = 10f;
     public Vector3 MoveDirection;
     public Vector3 DashDirection;
-    public float DashDistance = 100f;
+    public float DashDistance = 10f;
     public GameObject Aim;
     public GameObject Camera;
 
     public PlayerAnimator Animator;
 
-    public StatHolder PlayerStats;
-
+    public StatHolder PlayerStats => GameManager.Instance.PlayerStats;
 
     private int JumpCount = 0;
+
+    private TimeSince LastAttack = default;
+    private TimeSince LastDash = default;
+
+
 
 
 
@@ -46,37 +50,25 @@ public class PlayerCharacter : MonoBehaviour
 
     private void Attack(InputAction.CallbackContext obj)
     {
+        if (LastAttack < 0.4f) return;
+        DashDirection = Vector3.zero;
+        DashDirection = Vector3.forward * DashDistance * 0.05f;
         Animator.Attack();
         Physics.BoxCast(transform.position, new Vector3(0.3f, 0.5f, 0.5f), transform.forward, out RaycastHit hit, transform.rotation, 1f);
         if (hit.collider != null)
         {
             if (hit.collider.gameObject.GetComponent<IEnemy>() != null)
             {
-                hit.collider.gameObject.GetComponent<IEnemy>().TakeDamage(PlayerStats.Strength * 33f);
+                hit.collider.gameObject.GetComponent<IEnemy>().TakeDamage(PlayerStats.Strength * 33f, transform.forward);
             }
         }
+
+        LastAttack = 0;
+
     }
 
     public void Update()
     {
-
-        //transform the movement vector to the camera's local space so that the player moves in the direction of the camera when moving
-
-        //camera forward and right vectors:
-        var forward = Camera.transform.forward;
-        var right = Camera.transform.right;
-
-        //project forward and right vectors on the horizontal plane (y = 0)
-        forward.y = 0f;
-        right.y = 0f;
-        forward.Normalize();
-        right.Normalize();
-
-        //this is the direction in the world space we want to move:
-        var desiredMoveDirection = forward * MoveDirection.z + right * MoveDirection.x;
-        desiredMoveDirection.y = MoveDirection.y;
-
-
 
         //move player Relative to camera
         controller.Move(TransformMovement(MoveDirection + DashDirection) * Time.deltaTime);
@@ -85,7 +77,7 @@ public class PlayerCharacter : MonoBehaviour
         else
             JumpCount = 0;
 
-        DashDirection *= 0.9f;
+        DashDirection -= DashDirection * 4f * Time.deltaTime;
     }
 
     public Vector3 TransformMovement(Vector3 movement)
@@ -138,20 +130,36 @@ public class PlayerCharacter : MonoBehaviour
     }
     public void Jump(InputAction.CallbackContext contex)
     {
-        if (controller.isGrounded || JumpCount < 2)
+        if (controller.isGrounded && JumpCount < 2)
         {
+            Animator.Jump();
             MoveDirection.y = 8f;
             JumpCount++;
+        }
+        else if (!controller.isGrounded && JumpCount < 2)
+        {
+            Animator.Jump();
+            MoveDirection.y = 8f;
+            JumpCount += 2;
         }
     }
     public void Dash(InputAction.CallbackContext contex)
     {
+        if (LastDash < 1f) return;
+        DashDirection = Vector3.zero;
         if (MoveDirection.x != 0 || MoveDirection.z != 0)
         {
             var movement = MoveDirection;
             movement.y = 0;
 
-            DashDirection = movement.normalized * DashDistance;
+            DashDirection = movement.normalized * DashDistance * 0.2f;
         }
+        else
+        {
+            DashDirection = Vector3.forward * DashDistance * 0.2f;
+        }
+        Animator.Dash();
+        LastDash = 0;
+
     }
 }

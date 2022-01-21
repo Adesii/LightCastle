@@ -16,8 +16,9 @@ public class PlayerAnimator : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    private void FixedUpdate()
     {
+
         if (PlayerCharacter.MoveDirection.x != 0 || PlayerCharacter.MoveDirection.z != 0)
         {
             animator.SetBool("moving", true);
@@ -26,11 +27,22 @@ public class PlayerAnimator : MonoBehaviour
         {
             animator.SetBool("moving", false);
         }
+        animator.SetBool("grounded", PlayerCharacter.controller.isGrounded);
     }
 
     internal void Attack()
     {
         animator.SetLayerWeight(1, 1);
         animator.SetTrigger("attacking");
+    }
+
+    internal void Jump()
+    {
+        animator.SetTrigger("Jump");
+    }
+
+    internal void Dash()
+    {
+        animator.SetTrigger("Dash");
     }
 }
