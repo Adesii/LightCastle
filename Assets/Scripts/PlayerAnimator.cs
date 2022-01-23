@@ -9,6 +9,8 @@ public class PlayerAnimator : MonoBehaviour
     public PlayerCharacter PlayerCharacter;
     public Animator animator;
 
+    private Vector2 MoveVelocity;
+
     // Start is called before the first frame update
     private void Awake()
     {
@@ -19,15 +21,16 @@ public class PlayerAnimator : MonoBehaviour
     private void FixedUpdate()
     {
 
-        if (PlayerCharacter.MoveDirection.x != 0 || PlayerCharacter.MoveDirection.z != 0)
-        {
-            animator.SetBool("moving", true);
-        }
-        else
-        {
-            animator.SetBool("moving", false);
-        }
+
+        animator.SetFloat("xVelocity", MoveVelocity.x);
+        animator.SetFloat("zVelocity", MoveVelocity.y);
         animator.SetBool("grounded", PlayerCharacter.controller.isGrounded);
+        var dir = PlayerCharacter.MoveDirection;
+        dir.y = 0;
+        dir.Normalize();
+
+        MoveVelocity = Vector2.MoveTowards(MoveVelocity, new Vector2(dir.x, dir.z), Time.deltaTime * 5f);
+        //Debug.Log(MoveVelocity);
     }
 
     internal void Attack()
@@ -43,6 +46,6 @@ public class PlayerAnimator : MonoBehaviour
 
     internal void Dash()
     {
-        animator.SetTrigger("Dash");
+        //animator.SetTrigger("Dash");
     }
 }

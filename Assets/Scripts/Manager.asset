@@ -12,4 +12,110 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d21c468650dd4754eb514a8f69377885, type: 3}
   m_Name: Manager
   m_EditorClassIdentifier: 
+  Rooms:
+  - Object: {fileID: 7407840410764585462, guid: 33882db1c939268449ef7af9db90a7df, type: 3}
+    Weight: -100
+  - Object: {fileID: 2709287213242635766, guid: 4e368df83d0f5024fb594399633e9bfb, type: 3}
+    Weight: 100
+  - Object: {fileID: 7431412802412386860, guid: 2072e50e4817ccc4fa2be399a5873f17, type: 3}
+    Weight: 25
+  - Object: {fileID: 7689978272242889872, guid: 30df6405f46080e4f93ce5ddac3d2cb8, type: 3}
+    Weight: 50
+  Doors:
+  - {fileID: 4158679647877685760, guid: 02e19a3f353a979479be58baece344b0, type: 3}
+  - {fileID: 6572152488977639316, guid: a0d187c6b82e97b439641ce8c97568ba, type: 3}
+  - {fileID: 1128738439681054870, guid: 87477a26f3dc7774f94505155d1473e3, type: 3}
+  - {fileID: 2135324401893116419, guid: 1a94286e79469b64d8ed656a05d4d95a, type: 3}
+  CreateDungeon: 0
   Player: {fileID: 0}
+  PlayerStats:
+    Health: 0
+    MaxHealth: 100
+    Strength: 1
+    SoulAmount: 0
+    XP: 0
+    TotalXP: 0
+    XPToNextLevel: 100
+    Level: 1
+    PermaXP: 0
+  SoulDropPrefab: {fileID: 2951962277201358490, guid: 47872b42910044849b12d870558eff2f, type: 3}
+  XPCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 100
+      inSlope: 33.95994
+      outSlope: 33.95994
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.041252866
+    - serializedVersion: 3
+      time: 100
+      value: 10000
+      inSlope: 235.1072
+      outSlope: 235.1072
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.06951874
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MaxHealthCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 100
+      inSlope: -4.419326
+      outSlope: 4.164325
+      tangentMode: 1
+      weightedMode: 2
+      inWeight: 0
+      outWeight: 0.5080214
+    - serializedVersion: 3
+      time: 100
+      value: 30000
+      inSlope: 54.8116
+      outSlope: Infinity
+      tangentMode: 1
+      weightedMode: 3
+      inWeight: 0.5614299
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  DamageCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -4.419326
+      outSlope: 1.3448923
+      tangentMode: 1
+      weightedMode: 2
+      inWeight: 0
+      outWeight: 0.6626058
+    - serializedVersion: 3
+      time: 100
+      value: 1000
+      inSlope: 3.561472
+      outSlope: Infinity
+      tangentMode: 1
+      weightedMode: 3
+      inWeight: 0.7508909
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  SmallObjects:
+  - {fileID: 919132149155446097, guid: 3dff013f5ad575949ab486b527e4a199, type: 3}
+  - {fileID: 919132149155446097, guid: 146b3775dcccf20448d851934d508f9a, type: 3}
+  - {fileID: 919132149155446097, guid: 9a970fa98f55fb041962d29cd26a413c, type: 3}
+  MediumObjects:
+  - {fileID: 919132149155446097, guid: 9a970fa98f55fb041962d29cd26a413c, type: 3}
+  LargeObjects:
+  - {fileID: 919132149155446097, guid: 9a970fa98f55fb041962d29cd26a413c, type: 3}

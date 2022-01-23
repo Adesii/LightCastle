@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lean.Pool;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -12,7 +14,7 @@ public class Enemy : MonoBehaviour, IEnemy
 
     public void TakeDamage(float damage, Vector3 direction = default)
     {
-        Debug.Log("Enemy took damage");
+        //Debug.Log("Enemy took damage");
         EnemyStats.Health -= damage;
         Knockback(direction);
         if (EnemyStats.Health <= 0)
@@ -34,6 +36,8 @@ public class Enemy : MonoBehaviour, IEnemy
 
     private void Die()
     {
+
+        GameManager.Instance.DropSouls(50, this);
         Destroy(gameObject);
     }
 
@@ -44,10 +48,21 @@ public class Enemy : MonoBehaviour, IEnemy
         EnemyStats = new StatHolder();
     }
 
+    TimeSince lastAttack;
+
     // Update is called once per frame
     void Update()
     {
-        agent.SetDestination(GameManager.Instance.Player.transform.position);
+        if (Vector3.Distance(transform.position, GameManager.Instance.Player.transform.position) > 2f)
+        {
+            agent.SetDestination(GameManager.Instance.Player.transform.position);
+            lastAttack = 0;
+        }
+        else if (lastAttack > 1f)
+        {
+            GameManager.Instance.Player.TakeDamage(10);
+            lastAttack = 0;
+        }
 
     }
 }

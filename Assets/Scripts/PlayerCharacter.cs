@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerCharacter : MonoBehaviour
+public class PlayerCharacter : MonoBehaviour, IEnemy
 {
     public CharacterController controller;
     public float Speed = 10f;
@@ -25,7 +25,7 @@ public class PlayerCharacter : MonoBehaviour
     private TimeSince LastAttack = default;
     private TimeSince LastDash = default;
 
-
+    Controls controls;
 
 
 
@@ -36,16 +36,13 @@ public class PlayerCharacter : MonoBehaviour
         controller = GetComponent<CharacterController>();
         Animator = GetComponent<PlayerAnimator>();
 
-        Controls controls = new Controls();
+        controls = new Controls();
         controls.Player.Enable();
-        controls.Player.Move.performed += Movement;
-        controls.Player.Move.canceled += MovementCanceled;
         controls.Player.Jump.performed += Jump;
-        controls.Player.Look.performed += Look;
         controls.Player.Dash.performed += Dash;
         controls.Player.Fire.performed += Attack;
 
-        Aim.transform.rotation = Quaternion.Euler(0, 0, 0);
+        Aim.transform.localRotation = Quaternion.Euler(0, 0, 0);
     }
 
     private void Attack(InputAction.CallbackContext obj)
@@ -69,6 +66,8 @@ public class PlayerCharacter : MonoBehaviour
 
     public void Update()
     {
+        Move();
+        Look();
 
         //move player Relative to camera
         controller.Move(TransformMovement(MoveDirection + DashDirection) * Time.deltaTime);
@@ -78,6 +77,16 @@ public class PlayerCharacter : MonoBehaviour
             JumpCount = 0;
 
         DashDirection -= DashDirection * 4f * Time.deltaTime;
+
+    }
+
+    private void Move()
+    {
+        Vector2 move = controls.Player.Move.ReadValue<Vector2>();
+        Vector3 moveDirection = new Vector3(move.x, 0, move.y);
+        moveDirection *= Speed;
+        MoveDirection.x = moveDirection.x;
+        MoveDirection.z = moveDirection.z;
     }
 
     public Vector3 TransformMovement(Vector3 movement)
@@ -103,30 +112,20 @@ public class PlayerCharacter : MonoBehaviour
         //move player Relative to camera
         return desiredMoveDirection;
     }
-
-    public void Movement(InputAction.CallbackContext contex)
+    public void Look()
     {
-        Vector2 move = contex.ReadValue<Vector2>();
-        Vector3 moveDirection = new Vector3(move.x, 0, move.y);
-        //transform the movement vector to the camera's local space so that the player moves in the direction of the camera when moving
-
-
-        moveDirection *= Speed;
-        MoveDirection.x = moveDirection.x;
-        MoveDirection.z = moveDirection.z;
-
-
-    }
-    public void MovementCanceled(InputAction.CallbackContext contex)
-    {
-        MoveDirection.x = 0;
-        MoveDirection.z = 0;
-    }
-    public void Look(InputAction.CallbackContext contex)
-    {
-        Vector2 look = contex.ReadValue<Vector2>();
+        Vector2 look = controls.Player.Look.ReadValue<Vector2>();
         transform.Rotate(0, look.x * LookSpeed * Time.deltaTime, 0);
-        Aim.transform.Rotate(-look.y * LookSpeed * Time.deltaTime, 0, 0);
+
+        Aim.transform.localEulerAngles += new Vector3(-look.y * LookSpeed * Time.deltaTime, 0, 0);
+
+        //Clamp the rotation to 80 degrees up and 280 down with roll over
+        if (Aim.transform.localEulerAngles.x > 80 && Aim.transform.localEulerAngles.x < 288)
+        {
+            Aim.transform.localEulerAngles = new Vector3(Aim.transform.localEulerAngles.x - (-look.y * LookSpeed * Time.deltaTime), 0, 0);
+        }
+
+        //Aim.transform.localEulerAngles = new Vector3(Mathf.Clamp(Aim.transform.localEulerAngles.x, -80, 80), 0, 0);
     }
     public void Jump(InputAction.CallbackContext contex)
     {
@@ -161,5 +160,15 @@ public class PlayerCharacter : MonoBehaviour
         Animator.Dash();
         LastDash = 0;
 
+    }
+
+    public void TakeDamage(float damage, Vector3 Direction = default)
+    {
+        PlayerStats.Health -= damage;
+        if (PlayerStats.Health <= 0)
+        {
+            PlayerStats.Health = 0;
+            GameManager.Instance.GameOver();
+        }
     }
 }
