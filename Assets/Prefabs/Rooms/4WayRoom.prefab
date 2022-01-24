@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2709287213242635767}
   - component: {fileID: 2173172010752781502}
+  - component: {fileID: -5051430565662023988}
   m_Layer: 0
   m_Name: 4WayRoom
   m_TagString: Untagged
@@ -56,10 +57,43 @@ MonoBehaviour:
   - {fileID: 141072670412052979}
   - {fileID: 141072669777653696}
   - {fileID: 141072670457570073}
-  EnemySpawns: []
+  MiniMapRoomPrefab: {fileID: 418817532603452577, guid: 7f129a6b740b85b449093c96f8305858, type: 3}
   ConnectedDoors: []
-  MinObjectSpawn: 4
-  MaxObjectSpawn: 15
+  MinMaxObstacleCount:
+  - {x: 5, y: 15}
+  - {x: 2, y: 4}
+  - {x: 1, y: 2}
+  HasEndSpawn: 0
+--- !u!114 &-5051430565662023988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2709287213242635766}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AgentTypeID: 0
+  m_CollectObjects: 0
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.16666667
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 0}
+  m_BuildHeightMesh: 0
 --- !u!1001 &2709287212984399372
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -1,22 +1,38 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using DG.Tweening;
 using DG.Tweening.Core;
 using Lean.Pool;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 [CreateAssetMenu(fileName = "Game Manager", menuName = "Singletons/GameManager")]
 public partial class GameManager : yaSingleton.Singleton<GameManager>
 {
     public PlayerCharacter Player;
 
+    public GameObject PlayerUI;
+
+    public MainGameUI MainGameUI;
+
     public StatHolder PlayerStats;
 
     public GameObject SoulDropPrefab;
 
+    [Header("Player Curves")]
     public AnimationCurve XPCurve;
     public AnimationCurve MaxHealthCurve;
     public AnimationCurve DamageCurve;
+    [Header("Enemy Curves")]
+    public AnimationCurve EnemyHealthCurve;
+    public AnimationCurve EnemyDamageCurve;
+    public AnimationCurve EnemyLevel;
+    public AnimationCurve EnemyXPDrop;
+    public AnimationCurve EnemySpawnRate;
+
+
     public List<GameObject> SmallObjects;
     public List<GameObject> MediumObjects;
     public List<GameObject> LargeObjects;
@@ -25,12 +41,31 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
     protected override void Initialize()
     {
         base.Initialize();
+        if (SceneManager.GetActiveScene().buildIndex == 1)
+        {
+            StartGameInit();
+        }
+        PlayerStats = StatHolder.LoadPlayerStats();
+
+        PlayerStats.SavePlayerStats();
+
+    }
+
+    public void StartGameInit()
+    {
         Player = FindObjectOfType<PlayerCharacter>();
+        if (Player != null && FindObjectOfType<Canvas>() == null)
+            PlayerUI = Instantiate(PlayerUI);
+        if (Player != null)
+        {
+            MainGameUI = FindObjectOfType<Canvas>().GetComponent<MainGameUI>();
+            GenerateDungeon();
+            MainGameUI.StartUI();
+        }
 
-
-        PlayerStats = new StatHolder(); //TODO Replace with Permanent stats
-
-        GenerateDungeon();
+        PlayerStats = StatHolder.LoadPlayerStats();
+        PlayerStats.FirstTime = false;
+        PlayerStats.SavePlayerStats();
     }
 
 
@@ -38,7 +73,9 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
     public void AddXP(int amount)
     {
         PlayerStats.XP += amount;
+        PlayerStats.XPInRun += amount;
         PlayerStats.TotalXP += amount;
+        PlayerStats.PermaXP += amount / 10;
     }
 
     public override void OnFixedUpdate()
@@ -53,8 +90,14 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
         {
             PlayerStats.XP += PlayerStats.XPToNextLevel;
             PlayerStats.LevelDown();
-
         }
+
+        if (PlayerStats.Strength == 1)
+        {
+
+            PlayerStats.RefreshStats(this);
+        }
+
     }
 
     public void DropSouls(int AmountToDrop, Enemy by)
@@ -104,5 +147,31 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
     internal void GameOver()
     {
         Debug.Log("Game Over");
+
+        PlayerStats.SavePlayerStats();
+        SceneManager.LoadScene(0);
+    }
+
+    public async void StartGame()
+    {
+        var idk = GameObject.Find("TransitionPanel").GetComponent<Image>();
+        idk.raycastTarget = true;
+        await idk.DOFade(1, 2).AsyncWaitForCompletion();
+        SceneManager.LoadSceneAsync(1).completed += (e) =>
+        {
+            e.allowSceneActivation = true;
+            StartGameInit();
+        };
+    }
+
+    public void BackToMainMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void ClearPlayerstats()
+    {
+        PlayerStats = new StatHolder();
+        PlayerStats.SavePlayerStats();
     }
 }

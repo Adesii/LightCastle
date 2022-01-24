@@ -25,6 +25,7 @@ public class PlayerInfoUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.Instance == null || PlayerCharacter == null) return;
         HealthText.text = $"{PlayerCharacter.Health:0}/{PlayerCharacter.MaxHealth:0}";
         HealthBar.fillAmount = Mathf.Lerp(HealthBar.fillAmount, (float)PlayerCharacter.Health / PlayerCharacter.MaxHealth, Time.deltaTime * 10f);
 

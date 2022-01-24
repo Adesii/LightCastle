@@ -44,6 +44,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 0
+  IsPossibleEndSpawn: 0
+  Used: 0
 --- !u!1 &2144024695452956931
 GameObject:
   m_ObjectHideFlags: 0
@@ -88,6 +90,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 0
+  IsPossibleEndSpawn: 0
+  Used: 0
 --- !u!1 &2567059910831552878
 GameObject:
   m_ObjectHideFlags: 0
@@ -176,10 +180,13 @@ MonoBehaviour:
   StartRoom: 0
   Doors:
   - {fileID: 8307962877122723992}
-  EnemySpawns: []
+  MiniMapRoomPrefab: {fileID: 8153176566248665563, guid: 32474107b046371478b00f980e43fb02, type: 3}
   ConnectedDoors: []
-  MinObjectSpawn: 2
-  MaxObjectSpawn: 5
+  MinMaxObstacleCount:
+  - {x: 5, y: 8}
+  - {x: 0, y: 4}
+  - {x: 0, y: 2}
+  HasEndSpawn: 0
 --- !u!1 &5140231906149617952
 GameObject:
   m_ObjectHideFlags: 0
@@ -224,6 +231,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 0
+  IsPossibleEndSpawn: 0
+  Used: 0
 --- !u!1 &5758147409841722645
 GameObject:
   m_ObjectHideFlags: 0
@@ -268,6 +277,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 0
+  IsPossibleEndSpawn: 0
+  Used: 0
 --- !u!1 &5883333014828549886
 GameObject:
   m_ObjectHideFlags: 0
@@ -312,6 +323,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 0
+  IsPossibleEndSpawn: 0
+  Used: 0
 --- !u!1 &6350562014050097195
 GameObject:
   m_ObjectHideFlags: 0
@@ -356,6 +369,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 0
+  IsPossibleEndSpawn: 0
+  Used: 0
 --- !u!1 &9165625161129049778
 GameObject:
   m_ObjectHideFlags: 0
@@ -400,6 +415,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 0
+  IsPossibleEndSpawn: 0
+  Used: 0
 --- !u!1001 &1710949186025803105
 PrefabInstance:
   m_ObjectHideFlags: 0

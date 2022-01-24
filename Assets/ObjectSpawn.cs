@@ -9,16 +9,19 @@ public class ObjectSpawn : MonoBehaviour
 
     public ObstacleType Type;
 
+    public bool IsPossibleEndSpawn = false;
 
+    public bool Used = false;
     public enum ObstacleType
     {
         Small,
         Medium,
-        Large
+        Large,
+        Enemy
     }
 
 
-    private void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
         switch (Type)
         {
@@ -34,6 +37,10 @@ public class ObjectSpawn : MonoBehaviour
                 Gizmos.color = Color.blue;
                 Gizmos.DrawWireCube(transform.position + Vector3.up * 5, new Vector3(15, 10, 15));
                 break;
+            case ObstacleType.Enemy:
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawWireCube(transform.position, new Vector3(1, 2, 1));
+                break;
         }
     }
 
@@ -46,6 +53,13 @@ public class ObjectSpawn : MonoBehaviour
 
     internal void spawn()
     {
+        if (Used) return;
+        Used = true;
+        if (IsPossibleEndSpawn)
+        {
+            Instantiate(GameManager.Instance.EndSpawn, transform.position, Quaternion.identity, transform);
+            return;
+        }
         switch (Type)
         {
             case ObstacleType.Small:

@@ -4,12 +4,15 @@ using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-using System.Threading;
 using System.Threading.Tasks;
+using DG.Tweening;
+using UnityEngine.SceneManagement;
 
 [System.Serializable]
 public partial class GameManager : yaSingleton.Singleton<GameManager>
 {
+
+    public GameObject EnemyPrefab;
     /// <summary>
     ///  Room Prefabs
     /// </summary>
@@ -28,9 +31,10 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
 
     private List<GameObject> everythingCache = new List<GameObject>();
 
-    private static Dictionary<Vector2Int, RoomDesignation> RoomGrid = new Dictionary<Vector2Int, RoomDesignation>();
+    public static Dictionary<Vector2Int, RoomDesignation> RoomGrid = new Dictionary<Vector2Int, RoomDesignation>();
 
     public bool CreateDungeon;
+    public bool Ascents;
 
     public override void OnUpdate()
     {
@@ -41,10 +45,28 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
             CreateDungeon = false;
             GeneratingDungeon = true;
         }
+        if (Ascents)
+        {
+            Ascents = false;
+            Ascent();
+        }
     }
 
     private bool GeneratingDungeon = false;
+    public GameObject EndSpawn;
 
+    public int EnemySpawnAmount => Mathf.RoundToInt(EnemySpawnRate.Evaluate(GameManager.Instance.PlayerStats.CurrentAscention));
+    public StatHolder EnemyStats
+    {
+        get
+        {
+            var stats = new StatHolder();
+            stats.Level = Mathf.RoundToInt(EnemyLevel.Evaluate(PlayerStats.CurrentAscention));
+            stats.Health = EnemyHealthCurve.Evaluate(stats.Level);
+            stats.Strength = Mathf.RoundToInt(EnemyDamageCurve.Evaluate(stats.Level));
+            return stats;
+        }
+    }
 
     public async void GenerateDungeon()
     {
@@ -59,11 +81,12 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
         Debug.Log("Cleared RoomGrid");
         var StartRoom = UnityEngine.Object.FindObjectsOfType<Room>().FirstOrDefault(x => x.StartRoom);
         RoomGrid.Add(new Vector2Int(0, 0), new RoomDesignation(new Vector2Int(0, 0), StartRoom.gameObject));
-        RoomGrid.Add(new Vector2Int(-1, 0), new RoomDesignation(new Vector2Int(0, 0), StartRoom.gameObject));
+        RoomGrid.Add(new Vector2Int(-1, 0), new RoomDesignation(new Vector2Int(0, 0), null));
         var FirstDoor = StartRoom.GetComponentInChildren<Door>();
         StartRoom.ConnectedDoors.Add(FirstDoor);
         StartRoom.RoomDesignation = RoomGrid[new Vector2Int(0, 0)];
         await RecursiveResolveRoom(FirstDoor, StartRoom, 0);
+        Debug.Log("Finished Generating Dungeon");
         GeneratingDungeon = false;
 
         if (RoomGrid.Count < 5)
@@ -106,23 +129,56 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
             }
         }
 
+
+        var EndroomPossibilities = FindObjectsOfType<Room>().Where(x => x.HasEndSpawn).OrderBy(e => System.Guid.NewGuid()).ToList();
+        for (int i = 0; i < EndroomPossibilities.Count; i++)
+        {
+            var item = EndroomPossibilities[i];
+            if (i == 0)
+            {
+                item.GetComponentsInChildren<ObjectSpawn>().Where(e => e.IsPossibleEndSpawn).OrderBy(e => System.Guid.NewGuid()).FirstOrDefault()?.spawn();
+            }
+            else
+            {
+                item.DecorateRoom();
+            }
+        }
+        if (FindObjectOfType<EndManager>() == null)
+        {
+            GenerateDungeon();
+            GeneratingDungeon = true;
+            return;
+        }
+
         GeneratingDungeon = false;
+
+        foreach (var item in FindObjectsOfType<Room>())
+        {
+            item.InitNavMesh();
+            item.SpawnEnemies();
+        }
+
+
     }
     public async Task RecursiveResolveRoom(Door lastdoor, Room LastRoom, int depth)
     {
         if (lastdoor == null || LastRoom == null || RoomGrid.Count > 20)
         {
+            Debug.Log("Failed to resolve room");
             return;
         }
 
+        Debug.Log("Resolving Room");
         var GridPosition = LastRoom.RoomDesignation.position + new Vector2Int(Mathf.RoundToInt(lastdoor.OutDirection.x), Mathf.RoundToInt(lastdoor.OutDirection.z));
         if (RoomGrid.ContainsKey(GridPosition))
         {
+            Debug.Log("Already Resolved");
             return;
         }
 
         if (depth >= 3)
         {
+            Debug.Log("Depth Reached");
 
             var lastsdoor = Instantiate(Doors[Random.Range(0, Doors.Length)], lastdoor.transform.position + (Vector3.down * 1.6f), Quaternion.LookRotation(lastdoor.OutDirection, Vector3.up));
             var dj = lastsdoor.GetComponent<Room>();
@@ -144,6 +200,9 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
             RoomGrid.Add(deadendRoom.position, deadendRoom);
 
 
+            deadend.GetComponent<Room>().RoomDesignation = deadendRoom;
+
+
 
             everythingCache.Add(deadend);
             var deadendinNewRoom = deadend.GetComponentInChildren<Door>();
@@ -155,13 +214,17 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
             deadend.transform.RotateAround(deadendinNewRoom.transform.position, Vector3.up, Vector3.SignedAngle(lastdoorConnectorEnd.OutDirection, deadendinNewRoom.OutDirection, Vector3.up));
             return;
         }
+        Debug.Log("Generating Room");
 
 
         var NewDoor = Instantiate(Doors[Random.Range(0, Doors.Length)], lastdoor.transform.position + (Vector3.down * 1.6f), Quaternion.LookRotation(lastdoor.OutDirection, Vector3.up));
         NewDoor.GetComponent<Room>().ConnectedDoors.Add(lastdoor);
         lastdoor.ConnectedTo = NewDoor.GetComponent<Room>();
+        Debug.Log("Generated Door");
+
 
         RoomGrid.Add(GridPosition, new RoomDesignation(GridPosition, NewDoor));
+        NewDoor.GetComponent<Room>().RoomDesignation = new RoomDesignation(GridPosition, NewDoor.gameObject);
         everythingCache.Add(NewDoor);
         var NewDoorConnectorEnd = NewDoor.GetComponentsInChildren<Door>();
 
@@ -174,21 +237,7 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
             {
                 Debug.Log($"{GridPosition} From");
                 Debug.Log($"{GridPosition + new Vector2Int(Mathf.RoundToInt(item.OutDirection.x), Mathf.RoundToInt(item.OutDirection.z))} is already in the room grid");
-                //lastdoor.GetComponent<MeshRenderer>().enabled = true;
-                //lastdoor.GetComponent<Collider>().enabled = true;
-                //
-                //item.GetComponent<MeshRenderer>().enabled = true;
-                //item.GetComponent<Collider>().enabled = true;
 
-
-                //foreach (var door in LastRoom.ConnectedDoors.GetRange(1, LastRoom.ConnectedDoors.Count - 1))
-                //{
-                //
-                //    //RecursiveDestroy(door);
-                //    if (door != null && door.gameObject != null)
-                //        Destroy(door.gameObject);
-                //}
-                //Destroy(NewDoor);
                 return;
             }
 
@@ -283,6 +332,45 @@ public partial class GameManager : yaSingleton.Singleton<GameManager>
 
         // No other item was selected, so return very last index.
         return index;
+    }
+
+    public async void Ascent()
+    {
+        PlayerStats.CurrentAscention++;
+        if (PlayerStats.HighestAscention <= PlayerStats.CurrentAscention)
+        {
+            PlayerStats.HighestAscention = PlayerStats.CurrentAscention;
+        }
+        PlayerStats.SavePlayerStats();
+        Player.LockPlayer();
+        await MainGameUI.TransitionPanel.DOFade(1, 0.5f).AsyncWaitForCompletion();
+        if (PlayerStats.CurrentAscention == 6)
+        {
+            PlayerStats.PermaXP += PlayerStats.XPInRun;
+            SceneManager.LoadScene(2);
+            return;
+        }
+        Player.transform.SetPositionAndRotation(Player.PlayerSpawnPos, Player.PlayerSpawnRot);
+        GenerateDungeon();
+
+        Instance.MainGameUI.ClearDict();
+
+        MainGameUI.LevelText.text = $"Castle Ascention :\n {PlayerStats.CurrentAscention} / 5";
+
+        var idk = DOTween.Sequence();
+        idk.Append(MainGameUI.TransitionPanel.DOFade(1, 2f));
+        idk.Append(MainGameUI.LevelText.DOFade(0, 0f));
+        idk.Append(MainGameUI.LevelText.DOFade(1, 2f));
+        idk.Append(MainGameUI.LevelText.DOFade(0, 1f));
+        idk.Append(MainGameUI.TransitionPanel.DOFade(0, 2f));
+        await idk.Play().AsyncWaitForCompletion();
+        Player.UnlockPlayer();
+    }
+
+
+    public void CloseGame()
+    {
+        Application.Quit();
     }
 }
 

@@ -47,7 +47,13 @@ MonoBehaviour:
   StartRoom: 0
   Doors:
   - {fileID: 1010004683763974447}
+  MiniMapRoomPrefab: {fileID: 45810376361423584, guid: 84642b47aa513b546b413249302a24c6, type: 3}
   ConnectedDoors: []
+  MinMaxObstacleCount:
+  - {x: 5, y: 10}
+  - {x: 0, y: 4}
+  - {x: 0, y: 2}
+  HasEndSpawn: 0
 --- !u!1001 &9029596103648199095
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -123,7 +129,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 180
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5509460494099402310, guid: 02e19a3f353a979479be58baece344b0, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 02e19a3f353a979479be58baece344b0, type: 3}
 --- !u!4 &4427634898636035623 stripped
 Transform:

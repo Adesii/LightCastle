@@ -28,9 +28,19 @@ public class PlayerCharacter : MonoBehaviour, IEnemy
     Controls controls;
 
 
+    public Vector3 PlayerSpawnPos;
+    public Quaternion PlayerSpawnRot;
+
+
+
+    public bool IsActive { get; set; } = false;
+
+
 
     void Awake()
     {
+        PlayerSpawnPos = transform.position;
+        PlayerSpawnRot = transform.rotation;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
         controller = GetComponent<CharacterController>();
@@ -41,8 +51,26 @@ public class PlayerCharacter : MonoBehaviour, IEnemy
         controls.Player.Jump.performed += Jump;
         controls.Player.Dash.performed += Dash;
         controls.Player.Fire.performed += Attack;
+        controls.Player.CloseGame.performed += CloseGame;
 
         Aim.transform.localRotation = Quaternion.Euler(0, 0, 0);
+        LockPlayer();
+    }
+
+    public static void CloseGame(InputAction.CallbackContext obj)
+    {
+        GameManager.Instance.PlayerStats.SavePlayerStats();
+        Application.Quit();
+    }
+    private void OnDestroy()
+    {
+        controls.Player.Disable();
+        controls.Player.Jump.performed -= Jump;
+        controls.Player.Dash.performed -= Dash;
+        controls.Player.Fire.performed -= Attack;
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     private void Attack(InputAction.CallbackContext obj)
@@ -56,7 +84,7 @@ public class PlayerCharacter : MonoBehaviour, IEnemy
         {
             if (hit.collider.gameObject.GetComponent<IEnemy>() != null)
             {
-                hit.collider.gameObject.GetComponent<IEnemy>().TakeDamage(PlayerStats.Strength * 33f, transform.forward);
+                hit.collider.gameObject.GetComponent<IEnemy>().TakeDamage(PlayerStats.Strength, transform.forward);
             }
         }
 
@@ -66,6 +94,7 @@ public class PlayerCharacter : MonoBehaviour, IEnemy
 
     public void Update()
     {
+        if (controls == null) return;
         Move();
         Look();
 
@@ -77,6 +106,26 @@ public class PlayerCharacter : MonoBehaviour, IEnemy
             JumpCount = 0;
 
         DashDirection -= DashDirection * 4f * Time.deltaTime;
+
+        Physics.Raycast(transform.position + Vector3.up, Vector3.down, out RaycastHit hit, 10f, ~LayerMask.GetMask("Player"));
+        if (hit.collider != null)
+        {
+            if (hit.collider.gameObject.GetComponentInParent<Room>() is Room r)
+            {
+                GameManager.Instance.MainGameUI.MiniMap.SetRoom(r);
+                return;
+            }
+            if (hit.collider.gameObject.GetComponent<Room>() is Room s)
+            {
+                GameManager.Instance.MainGameUI.MiniMap.SetRoom(s);
+                return;
+            }
+            if (hit.collider.gameObject.GetComponent<Room>() is Room t)
+            {
+                GameManager.Instance.MainGameUI.MiniMap.SetRoom(t);
+                return;
+            }
+        }
 
     }
 
@@ -170,5 +219,15 @@ public class PlayerCharacter : MonoBehaviour, IEnemy
             PlayerStats.Health = 0;
             GameManager.Instance.GameOver();
         }
+    }
+
+    internal void LockPlayer()
+    {
+        controls.Disable();
+    }
+
+    internal void UnlockPlayer()
+    {
+        controls.Enable();
     }
 }

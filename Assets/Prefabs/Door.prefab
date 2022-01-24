@@ -120,16 +120,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2624581007850195792}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_AgentTypeID: 0
-  m_StartPoint: {x: -1, y: -1.587029, z: 0}
-  m_EndPoint: {x: 1, y: -1.5870287, z: 0}
-  m_Width: 4.51
-  m_CostModifier: -1
+  m_StartPoint: {x: 1, y: -1.5870287, z: 0}
+  m_EndPoint: {x: -1, y: -1.587029, z: 0}
+  m_Width: 6.42
+  m_CostModifier: 0
   m_Bidirectional: 1
-  m_AutoUpdatePosition: 0
+  m_AutoUpdatePosition: 1
   m_Area: 0
